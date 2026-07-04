@@ -1,0 +1,25 @@
+{
+  "name": "JEE 2028 — Prep Journal",
+  "short_name": "JEE Journal",
+  "description": "A premium offline companion for JEE 2028 preparation — error log, revision bank, test analysis and analytics.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F3EC",
+  "theme_color": "#3A332A",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
