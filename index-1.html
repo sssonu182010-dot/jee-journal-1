@@ -1,0 +1,1920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JEE 2028 — Prep Journal</title>
+<meta name="description" content="A premium offline companion for JEE 2028 preparation.">
+
+<!-- ============ PWA HOOKS ============ -->
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#3A332A">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JEE Journal">
+
+<style>
+/* =====================================================================
+   DESIGN TOKENS
+   Vintage paper journal. Cream / black / muted brown. Serif everywhere.
+   ===================================================================== */
+:root{
+  --paper:        #F6F3EC;
+  --paper-2:      #EFEAE0;
+  --card:         #FFFDF8;
+  --ink:          #2A2620;
+  --ink-soft:     #6B6357;
+  --line:         #E3DCCB;
+  --brown:        #6F5A3E;
+  --brown-deep:   #3A332A;
+  --brown-dark:   #221D17;
+  --gold:         #B98A3E;
+  --cat-a:        #A9482F;   /* couldn't solve */
+  --cat-a-bg:     #F3E1DA;
+  --cat-b:        #B3811F;   /* hard */
+  --cat-b-bg:     #F3E9D2;
+  --cat-c:        #4E6E4B;   /* easy */
+  --cat-c-bg:     #E1E9DC;
+  --shadow-sm:    0 1px 2px rgba(42,38,32,0.06), 0 1px 1px rgba(42,38,32,0.04);
+  --shadow-md:    0 6px 20px rgba(42,38,32,0.09), 0 2px 6px rgba(42,38,32,0.06);
+  --shadow-lg:    0 16px 40px rgba(42,38,32,0.16), 0 6px 16px rgba(42,38,32,0.08);
+  --radius-sm:    10px;
+  --radius-md:    16px;
+  --radius-lg:    22px;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  --transition: 220ms cubic-bezier(.4,0,.2,1);
+}
+
+/* Dark mode overrides — same warmth, low-light register */
+body.dark{
+  --paper:        #1B1712;
+  --paper-2:      #221D17;
+  --card:         #26211A;
+  --ink:          #EDE6D6;
+  --ink-soft:     #B4A991;
+  --line:         #3A332A;
+  --brown:        #C4A56D;
+  --brown-deep:   #E8DCC2;
+  --brown-dark:   #F6F3EC;
+  --gold:         #D8AE63;
+  --cat-a:        #E38669;
+  --cat-a-bg:     #3A2620;
+  --cat-b:        #E0B15C;
+  --cat-b-bg:     #3A2F18;
+  --cat-c:        #8FBB86;
+  --cat-c-bg:     #202D1E;
+  --shadow-sm:    0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md:    0 6px 20px rgba(0,0,0,0.4);
+  --shadow-lg:    0 16px 40px rgba(0,0,0,0.55);
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at top left, rgba(111,90,62,0.05), transparent 55%),
+    var(--paper);
+  color:var(--ink);
+  font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;
+  transition:background var(--transition), color var(--transition);
+  overscroll-behavior-y:none;
+}
+
+/* subtle paper grain texture, purely decorative, non-interactive */
+.grain{
+  position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0.5; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.02 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:180px;
+}
+body.dark .grain{ opacity:0.35; mix-blend-mode:overlay; }
+
+a,button,input,textarea,select{ font-family:inherit; }
+button{ cursor:pointer; }
+::selection{ background:var(--gold); color:#fff; }
+
+/* =====================================================================
+   LAYOUT SHELL
+   ===================================================================== */
+#app{ position:relative; z-index:2; max-width:560px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+/* ---------- Header ---------- */
+header.top{
+  position:sticky; top:0; z-index:30;
+  background:linear-gradient(var(--paper) 85%, transparent);
+  padding:18px 18px 10px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.brand{ display:flex; flex-direction:column; line-height:1.1; }
+.brand .eyebrow{ font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink-soft); font-style:italic; }
+.brand h1{ margin:2px 0 0; font-size:22px; font-weight:400; letter-spacing:0.3px; }
+.brand h1 em{ font-style:italic; color:var(--brown); }
+.header-actions{ display:flex; gap:8px; }
+.icon-btn{
+  width:40px; height:40px; border-radius:50%; border:1px solid var(--line);
+  background:var(--card); color:var(--ink); display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-sm); transition:transform var(--transition), box-shadow var(--transition);
+}
+.icon-btn:active{ transform:scale(0.9); }
+.icon-btn svg{ width:18px; height:18px; stroke:currentColor; }
+
+/* ---------- Main scroll area ---------- */
+main{ flex:1; padding:4px 18px 110px; }
+.view{ animation:fadeSlide 320ms cubic-bezier(.4,0,.2,1); }
+@keyframes fadeSlide{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+
+/* ---------- Section headings ---------- */
+.section-title{
+  display:flex; align-items:baseline; justify-content:space-between; margin:26px 0 12px;
+}
+.section-title h2{ font-size:15px; font-weight:400; letter-spacing:1.6px; text-transform:uppercase; color:var(--ink-soft); margin:0; }
+.section-title .hint{ font-size:12px; color:var(--ink-soft); font-style:italic; }
+
+/* =====================================================================
+   BOTTOM NAV
+   ===================================================================== */
+nav.bottom{
+  position:fixed; bottom:0; left:0; right:0; z-index:40;
+  display:flex; justify-content:center;
+}
+.nav-inner{
+  width:100%; max-width:560px; margin:0 18px 14px; margin-left:auto; margin-right:auto;
+  background:var(--brown-deep); border-radius:26px; box-shadow:var(--shadow-lg);
+  display:flex; padding:8px; gap:2px;
+}
+.nav-btn{
+  flex:1; background:none; border:none; color:#D8CFBB; padding:10px 4px 8px;
+  display:flex; flex-direction:column; align-items:center; gap:4px; border-radius:18px;
+  transition:background var(--transition), color var(--transition);
+  font-size:10.5px; letter-spacing:0.4px;
+}
+.nav-btn svg{ width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.6; }
+.nav-btn.active{ background:rgba(255,255,255,0.12); color:#F6F3EC; }
+body.dark .nav-inner{ background:#0F0C09; }
+
+/* =====================================================================
+   FLOATING ACTION BUTTON
+   ===================================================================== */
+.fab{
+  position:fixed; right:22px; bottom:96px; z-index:45;
+  width:58px; height:58px; border-radius:50%; border:none;
+  background:var(--brown-deep); color:var(--paper);
+  box-shadow:var(--shadow-lg); font-size:28px; display:flex; align-items:center; justify-content:center;
+  transition:transform 160ms ease, opacity var(--transition);
+}
+.fab:active{ transform:scale(0.88) rotate(90deg); }
+.fab.hidden{ opacity:0; pointer-events:none; transform:scale(0.6); }
+
+/* =====================================================================
+   RIPPLE EFFECT (applied via JS to any .rippleable element)
+   ===================================================================== */
+.rippleable{ position:relative; overflow:hidden; }
+.ripple{
+  position:absolute; border-radius:50%; background:rgba(255,255,255,0.5);
+  transform:scale(0); animation:rippleAnim 560ms ease-out forwards; pointer-events:none;
+}
+body.dark .ripple{ background:rgba(255,255,255,0.18); }
+@keyframes rippleAnim{ to{ transform:scale(2.6); opacity:0; } }
+
+/* =====================================================================
+   CARDS — generic
+   ===================================================================== */
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-md);
+  box-shadow:var(--shadow-sm); transition:transform var(--transition), box-shadow var(--transition), background var(--transition);
+}
+.card:active{ transform:scale(0.985); }
+
+/* ---------- Dashboard quote ---------- */
+.quote-card{
+  padding:22px 20px; margin-bottom:6px; position:relative;
+  background:var(--brown-deep); color:var(--paper); border:none;
+  border-radius:var(--radius-lg); box-shadow:var(--shadow-md);
+}
+.quote-card .mark{ font-size:34px; line-height:0.4; color:var(--gold); font-style:italic; }
+.quote-card p{ font-size:16.5px; font-style:italic; line-height:1.55; margin:10px 0 4px; }
+.quote-card .who{ font-size:11.5px; letter-spacing:1.5px; text-transform:uppercase; opacity:0.65; }
+
+/* ---------- Streak banner ---------- */
+.streak-row{ display:flex; gap:12px; margin:16px 0; }
+.streak-card{
+  flex:1; padding:16px 16px; display:flex; align-items:center; gap:12px;
+}
+.streak-flame{ font-size:30px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.15)); }
+.streak-num{ font-size:26px; line-height:1; }
+.streak-label{ font-size:11px; color:var(--ink-soft); letter-spacing:0.8px; text-transform:uppercase; margin-top:3px; }
+
+/* ---------- Stat grid ---------- */
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.stat-card{ padding:16px; }
+.stat-card .top{ display:flex; align-items:center; justify-content:space-between; }
+.stat-card .icon{ font-size:17px; }
+.stat-card .value{ font-size:26px; margin-top:8px; }
+.stat-card .label{ font-size:11.5px; color:var(--ink-soft); letter-spacing:0.4px; margin-top:2px; }
+.stat-card.wide{ grid-column:1 / -1; }
+
+/* ---------- Mastery ring ---------- */
+.mastery-block{ display:flex; align-items:center; gap:18px; padding:18px; }
+.mastery-block .ring-wrap{ position:relative; width:88px; height:88px; flex-shrink:0; }
+.mastery-block .ring-num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:19px; }
+.mastery-block .desc h3{ margin:0 0 4px; font-size:15px; font-weight:400; }
+.mastery-block .desc p{ margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.5; }
+
+/* =====================================================================
+   SUBJECT / CHAPTER CARDS
+   ===================================================================== */
+.subject-grid{ display:flex; flex-direction:column; gap:12px; }
+.subject-card{
+  padding:20px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.subject-card .meta h3{ margin:0 0 4px; font-size:18px; font-weight:400; }
+.subject-card .meta p{ margin:0; font-size:12px; color:var(--ink-soft); }
+.subject-card .chev{ opacity:0.4; }
+
+.chapter-card{ padding:16px 18px; margin-bottom:12px; }
+.chapter-card .head{ display:flex; align-items:center; justify-content:space-between; }
+.chapter-card h3{ margin:0; font-size:16px; font-weight:400; }
+.chapter-card .mastery-tag{ font-size:12.5px; color:var(--ink-soft); }
+.badge-row{ display:flex; gap:8px; margin:10px 0; }
+.badge{
+  font-size:11px; letter-spacing:0.3px; padding:3px 9px; border-radius:20px; font-weight:600;
+}
+.badge.a{ background:var(--cat-a-bg); color:var(--cat-a); }
+.badge.b{ background:var(--cat-b-bg); color:var(--cat-b); }
+.badge.c{ background:var(--cat-c-bg); color:var(--cat-c); }
+
+.progress-track{ height:7px; border-radius:20px; background:var(--paper-2); overflow:hidden; }
+.progress-fill{ height:100%; border-radius:20px; background:linear-gradient(90deg, var(--gold), var(--brown)); transition:width 500ms ease; }
+
+/* ---------- back bar ---------- */
+.back-bar{ display:flex; align-items:center; gap:10px; margin:6px 0 4px; }
+.back-bar button{ background:none; border:none; color:var(--ink); display:flex; align-items:center; gap:6px; font-size:14px; padding:6px 4px; }
+.back-bar button svg{ width:16px; height:16px; }
+.back-bar .crumb{ font-size:13px; color:var(--ink-soft); font-style:italic; }
+
+/* ---------- question / revision item cards ---------- */
+.q-card{ padding:16px 18px; margin-bottom:12px; position:relative; }
+.q-card .cat-strip{ position:absolute; left:0; top:14px; bottom:14px; width:4px; border-radius:4px; }
+.q-card .cat-strip.a{ background:var(--cat-a); }
+.q-card .cat-strip.b{ background:var(--cat-b); }
+.q-card .cat-strip.c{ background:var(--cat-c); }
+.q-card .row1{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding-left:10px; }
+.q-card .source{ font-size:15px; font-weight:600; }
+.q-card .notes{ font-size:13.5px; color:var(--ink-soft); margin-top:6px; padding-left:10px; line-height:1.5; }
+.q-card .foot{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-left:10px; }
+.q-card .date{ font-size:11.5px; color:var(--ink-soft); }
+.q-card .foot-actions{ display:flex; gap:6px; align-items:center; }
+.q-card .edit{ background:none; border:none; color:var(--brown); font-size:12px; letter-spacing:0.3px; padding:4px 6px; }
+.q-card .del{ background:none; border:none; color:var(--cat-a); font-size:12px; letter-spacing:0.3px; padding:4px 6px; }
+.q-card .rev-question{ font-size:15px; line-height:1.55; padding-left:10px; white-space:pre-wrap; }
+
+.empty-state{ text-align:center; padding:50px 16px; color:var(--ink-soft); }
+.empty-state .glyph{ font-size:34px; margin-bottom:10px; }
+.empty-state p{ font-size:13.5px; line-height:1.6; margin:0; }
+
+/* =====================================================================
+   TEST CARDS
+   ===================================================================== */
+.test-card{ padding:18px; margin-bottom:14px; }
+.test-card .head{ display:flex; justify-content:space-between; align-items:flex-start; }
+.test-card h3{ margin:0; font-size:17px; font-weight:600; }
+.test-card .date{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+.test-card .pct{ font-size:22px; color:var(--brown); }
+.test-marks{ display:flex; gap:10px; margin:14px 0; }
+.test-marks .m{ flex:1; background:var(--paper-2); border-radius:12px; padding:9px 6px; text-align:center; }
+.test-marks .m .n{ font-size:15px; }
+.test-marks .m .l{ font-size:10px; color:var(--ink-soft); letter-spacing:0.4px; text-transform:uppercase; margin-top:2px; }
+.test-card .note-block{ font-size:13px; color:var(--ink-soft); line-height:1.5; margin-top:6px; }
+.test-card .note-block b{ color:var(--ink); font-weight:600; }
+.test-card .del{ background:none; border:none; color:var(--cat-a); font-size:12px; margin-top:10px; }
+.test-card .edit{ background:none; border:none; color:var(--brown); font-size:12px; margin-top:10px; margin-right:14px; }
+.test-card .actions-row{ display:flex; }
+
+.summary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px; }
+
+/* canvas containers */
+.chart-card{ padding:18px; }
+.chart-card h3{ margin:0 0 12px; font-size:14px; font-weight:400; letter-spacing:0.5px; color:var(--ink-soft); text-transform:uppercase; }
+canvas{ width:100%; display:block; }
+
+.legend{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; justify-content:center; }
+.legend .item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); }
+.legend .dot{ width:9px; height:9px; border-radius:50%; }
+
+/* =====================================================================
+   ANALYTICS LISTS
+   ===================================================================== */
+.mini-list{ display:flex; flex-direction:column; gap:8px; }
+.mini-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 16px; }
+.mini-row .name{ font-size:14px; }
+.mini-row .sub{ font-size:11px; color:var(--ink-soft); }
+.mini-row .val{ font-size:14px; font-weight:600; color:var(--brown); }
+
+/* =====================================================================
+   MODALS / SHEETS
+   ===================================================================== */
+.overlay{
+  position:fixed; inset:0; background:rgba(20,17,12,0.45); backdrop-filter:blur(2px);
+  z-index:60; display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity var(--transition);
+}
+.overlay.open{ opacity:1; pointer-events:auto; }
+.sheet{
+  background:var(--paper); width:100%; max-width:560px; border-radius:26px 26px 0 0;
+  padding:10px 22px 26px; max-height:88vh; overflow-y:auto;
+  transform:translateY(30px); transition:transform var(--transition);
+  box-shadow:0 -10px 40px rgba(0,0,0,0.25);
+}
+.overlay.open .sheet{ transform:translateY(0); }
+.sheet-handle{ width:40px; height:4px; background:var(--line); border-radius:4px; margin:8px auto 14px; }
+.sheet h2{ font-size:19px; font-weight:400; margin:0 0 4px; }
+.sheet .sub{ font-size:12.5px; color:var(--ink-soft); margin:0 0 18px; }
+
+.field{ margin-bottom:14px; }
+.field label{ display:block; font-size:11.5px; letter-spacing:0.6px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+.field input[type=text], .field input[type=number], .field input[type=date], .field textarea, .field select{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
+  background:var(--card); color:var(--ink); font-size:14.5px; font-family:var(--serif);
+  transition:border var(--transition), box-shadow var(--transition);
+}
+.field input:focus, .field textarea:focus, .field select:focus{
+  outline:none; border-color:var(--brown); box-shadow:0 0 0 3px rgba(111,90,62,0.15);
+}
+.field textarea{ resize:vertical; min-height:70px; line-height:1.5; }
+.field textarea.large{ min-height:120px; }
+
+.cat-picker{ display:flex; gap:8px; }
+.cat-option{
+  flex:1; padding:12px 6px; text-align:center; border-radius:12px; border:1.5px solid var(--line);
+  background:var(--card); font-size:13px; transition:all var(--transition);
+}
+.cat-option strong{ display:block; font-size:15px; }
+.cat-option[data-cat=A].active{ background:var(--cat-a-bg); border-color:var(--cat-a); color:var(--cat-a); }
+.cat-option[data-cat=B].active{ background:var(--cat-b-bg); border-color:var(--cat-b); color:var(--cat-b); }
+.cat-option[data-cat=C].active{ background:var(--cat-c-bg); border-color:var(--cat-c); color:var(--cat-c); }
+
+.field-row{ display:flex; gap:10px; }
+.field-row .field{ flex:1; }
+
+.btn-primary{
+  width:100%; padding:15px; border:none; border-radius:14px; background:var(--brown-deep);
+  color:var(--paper); font-size:15px; letter-spacing:0.4px; margin-top:6px; box-shadow:var(--shadow-md);
+}
+.btn-secondary{
+  width:100%; padding:13px; border:1px solid var(--line); border-radius:14px; background:transparent;
+  color:var(--ink); font-size:14px; margin-top:10px;
+}
+.btn-danger{ color:var(--cat-a); border-color:var(--cat-a-bg); }
+
+datalist{ }
+
+/* ---------- Search overlay ---------- */
+.search-overlay{
+  position:fixed; inset:0; z-index:70; background:var(--paper);
+  display:flex; flex-direction:column; transform:translateY(-100%); transition:transform var(--transition);
+}
+.search-overlay.open{ transform:translateY(0); }
+.search-bar-row{ display:flex; gap:10px; padding:18px; align-items:center; }
+.search-bar-row input{
+  flex:1; padding:13px 16px; border-radius:14px; border:1px solid var(--line); background:var(--card);
+  color:var(--ink); font-size:15px; font-family:var(--serif);
+}
+.search-bar-row input:focus{ outline:none; border-color:var(--brown); }
+.search-results{ padding:0 18px; overflow-y:auto; }
+.search-result-item{ padding:14px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+.search-result-item .name{ font-size:14.5px; }
+.search-result-item .tag{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.4px; }
+
+/* ---------- Settings ---------- */
+.settings-row{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; margin-bottom:10px; }
+.settings-row .txt h4{ margin:0; font-size:14.5px; font-weight:400; }
+.settings-row .txt p{ margin:3px 0 0; font-size:12px; color:var(--ink-soft); }
+.switch{ width:46px; height:26px; border-radius:20px; background:var(--line); position:relative; border:none; flex-shrink:0; transition:background var(--transition); }
+.switch::after{ content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.3); transition:transform var(--transition); }
+.switch.on{ background:var(--brown); }
+.switch.on::after{ transform:translateX(20px); }
+
+/* ---------- Toast ---------- */
+#toast{
+  position:fixed; left:50%; bottom:100px; transform:translate(-50%, 20px); z-index:100;
+  background:var(--brown-deep); color:var(--paper); padding:12px 20px; border-radius:30px;
+  font-size:13.5px; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:all 260ms ease;
+  max-width:80%; text-align:center;
+}
+#toast.show{ opacity:1; transform:translate(-50%, 0); }
+
+/* ---------- misc ---------- */
+.hidden{ display:none !important; }
+.fade-in{ animation:fadeSlide 300ms ease; }
+
+@media (min-width:560px){
+  .fab{ right:calc(50% - 280px + 22px); }
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div id="app">
+
+  <!-- ============================================================ HEADER -->
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">JEE &nbsp;2028</span>
+      <h1>Prep <em>Journal</em></h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn rippleable" id="btnSearch" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="icon-btn rippleable" id="btnSettings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================ MAIN -->
+  <main id="main"></main>
+
+  <!-- ============================================================ FAB -->
+  <button class="fab" id="fab" aria-label="Add">+</button>
+
+  <!-- ============================================================ BOTTOM NAV -->
+  <nav class="bottom">
+    <div class="nav-inner">
+      <button class="nav-btn rippleable" data-tab="home">
+        <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+        Home
+      </button>
+      <button class="nav-btn rippleable" data-tab="errors">
+        <svg viewBox="0 0 24 24"><path d="M4 4h11l5 5v11H4z"/><path d="M15 4v5h5"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+        Errors
+      </button>
+      <button class="nav-btn rippleable" data-tab="revision">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-6h6"/></svg>
+        Revise
+      </button>
+      <button class="nav-btn rippleable" data-tab="tests">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Tests
+      </button>
+      <button class="nav-btn rippleable" data-tab="analytics">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Stats
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ SEARCH OVERLAY -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-bar-row">
+    <input type="text" id="searchInput" placeholder="Search a chapter, subject or test…" autocomplete="off">
+    <button class="icon-btn rippleable" id="btnCloseSearch">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- ================================================================ QUESTION MODAL (Error Log) -->
+<div class="overlay" id="questionModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Log a question</h2>
+    <p class="sub">Add a question you got wrong, found hard, or solved with ease.</p>
+    <form id="questionForm">
+      <div class="field">
+        <label>Subject</label>
+        <select id="qSubject" required></select>
+      </div>
+      <div class="field">
+        <label>Chapter</label>
+        <input type="text" id="qChapter" list="chapterList" placeholder="e.g. Rotational Motion" required>
+        <datalist id="chapterList"></datalist>
+      </div>
+      <div class="field">
+        <label>Question source</label>
+        <input type="text" id="qSource" placeholder="e.g. HC Verma Ch.7, Q.14" required>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="qNotes" placeholder="Where you went wrong, key idea, formula…"></textarea>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <div class="cat-picker" id="qCatPicker">
+          <button type="button" class="cat-option" data-cat="A"><strong>A</strong>Couldn't solve</button>
+          <button type="button" class="cat-option" data-cat="B"><strong>B</strong>Hard</button>
+          <button type="button" class="cat-option" data-cat="C"><strong>C</strong>Easy</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary rippleable">Save question</button>
+      <button type="button" class="btn-secondary rippleable" id="qCancel">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================================================================ REVISION MODAL -->
+<div class="overlay" id="revisionModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Save for revision</h2>
+    <p class="sub">Store an important question to revisit before the exam.</p>
+    <form id="revisionForm">
+      <div class="field">
+        <label>Subject</label>
+        <select id="rSubject" required></select>
+      </div>
+      <div class="field">
+        <label>Chapter</label>
+        <input type="text" id="rChapter" list="chapterListRev" placeholder="e.g. Thermodynamics" required>
+        <datalist id="chapterListRev"></datalist>
+      </div>
+      <div class="field">
+        <label>Question</label>
+        <textarea id="rQuestion" class="large" placeholder="Paste or type out the full question…" required></textarea>
+      </div>
+      <div class="field">
+        <label>Source</label>
+        <input type="text" id="rSource" placeholder="e.g. JEE Mains 2024, Shift 2">
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="rNotes" placeholder="Why this question is worth revising…"></textarea>
+      </div>
+      <button type="submit" class="btn-primary rippleable">Save for revision</button>
+      <button type="button" class="btn-secondary rippleable" id="rCancel">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================================================================ TEST MODAL -->
+<div class="overlay" id="testModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Log a test</h2>
+    <p class="sub">Record a mock or sectional test for analysis.</p>
+    <form id="testForm">
+      <div class="field">
+        <label>Test name</label>
+        <input type="text" id="tName" placeholder="e.g. FIITJEE AITS Part Test 3" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="tDate" required>
+        </div>
+        <div class="field">
+          <label>Total marks</label>
+          <input type="number" id="tTotal" placeholder="300" required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Score obtained</label>
+        <input type="number" id="tScore" placeholder="186" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Physics marks</label>
+          <input type="number" id="tPhysics" placeholder="60">
+        </div>
+        <div class="field">
+          <label>Chemistry marks</label>
+          <input type="number" id="tChemistry" placeholder="70">
+        </div>
+        <div class="field">
+          <label>Maths marks</label>
+          <input type="number" id="tMaths" placeholder="56">
+        </div>
+      </div>
+      <div class="field">
+        <label>Mistakes</label>
+        <textarea id="tMistakes" placeholder="Silly errors, conceptual gaps, time issues…"></textarea>
+      </div>
+      <div class="field">
+        <label>Things to improve</label>
+        <textarea id="tImprove" placeholder="What to work on before the next test…"></textarea>
+      </div>
+      <button type="submit" class="btn-primary rippleable">Save test</button>
+      <button type="button" class="btn-secondary rippleable" id="tCancel">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<!-- ================================================================ SETTINGS MODAL -->
+<div class="overlay" id="settingsModal">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Settings</h2>
+    <p class="sub">Backup, theme and data controls.</p>
+
+    <div class="settings-row card">
+      <div class="txt"><h4>Dark mode</h4><p>Easier on the eyes for late-night revision.</p></div>
+      <button class="switch" id="darkSwitch"></button>
+    </div>
+
+    <div class="section-title" style="margin-top:22px;"><h2>Backup</h2></div>
+    <button class="btn-secondary rippleable" id="btnExport">Export all data as JSON</button>
+    <button class="btn-secondary rippleable" id="btnImport">Import data from JSON</button>
+    <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+
+    <div class="section-title" style="margin-top:22px;"><h2>Danger zone</h2></div>
+    <button class="btn-secondary btn-danger rippleable" id="btnClearAll">Clear all data</button>
+
+    <button type="button" class="btn-secondary rippleable" id="settingsClose" style="margin-top:22px;">Close</button>
+  </div>
+</div>
+
+<!-- ================================================================ TOAST -->
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   JEE 2028 PREP JOURNAL — APPLICATION SCRIPT
+   Vanilla JS, single-file, fully offline via localStorage.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. CONSTANTS & STATE
+   --------------------------------------------------------------------- */
+const SUBJECTS = ['Physics', 'Chemistry', 'Maths'];
+const STORAGE_KEY = 'jeeJournalData_v1';
+
+const QUOTES = [
+  { q: "Discipline is choosing between what you want now and what you want most.", a: "Anonymous" },
+  { q: "The pain of discipline weighs ounces; the pain of regret weighs tons.", a: "Jim Rohn" },
+  { q: "Small daily improvements are the key to staggering long-term results.", a: "Anonymous" },
+  { q: "You don't have to be great to start, but you have to start to be great.", a: "Zig Ziglar" },
+  { q: "A river cuts through rock not because of its power, but its persistence.", a: "Jim Watkins" },
+  { q: "Every problem you solve wrong today is a mark you won't lose tomorrow.", a: "Anonymous" },
+  { q: "Mastery is built one mistake at a time, if you dare to look at it twice.", a: "Anonymous" },
+  { q: "The expert in anything was once a beginner who refused to quit.", a: "Helen Hayes (adapted)" },
+  { q: "Success is the sum of small efforts repeated day in and day out.", a: "Robert Collier" },
+  { q: "Revise like the exam is tomorrow; prepare like it's a year away.", a: "Anonymous" },
+  { q: "The only way to learn mathematics is to do mathematics.", a: "Paul Halmos" },
+  { q: "Focus on being productive instead of busy.", a: "Tim Ferriss" },
+  { q: "What you do consistently, not occasionally, shapes your rank.", a: "Anonymous" },
+  { q: "Hard days build the toppers of tomorrow.", a: "Anonymous" },
+  { q: "Your only competition is who you were yesterday.", a: "Anonymous" },
+  { q: "An error log is just a map of where your rank is hiding.", a: "Anonymous" },
+  { q: "Slow progress is still progress. Don't stop.", a: "Anonymous" },
+  { q: "Test day rewards those who reviewed their mistakes, not just their notes.", a: "Anonymous" },
+  { q: "Clarity comes from action, not thought.", a: "Marie Forleo" },
+  { q: "The comeback is always stronger than the setback.", a: "Anonymous" }
+];
+
+// Default empty data shape
+function defaultData(){
+  const emptySubjects = () => ({ Physics:{}, Chemistry:{}, Maths:{} });
+  return {
+    errorLog: emptySubjects(),     // { Subject: { ChapterName: [ {id,source,notes,date,category} ] } }
+    revision: emptySubjects(),     // { Subject: { ChapterName: [ {id,question,source,notes,date} ] } }
+    tests: [],                     // [ {id,name,date,score,total,physics,chemistry,maths,mistakes,improve} ]
+    streak: { count:0, lastDate:null },
+    darkMode: false
+  };
+}
+
+let DATA = loadData();
+
+// Navigation state — drives what #main renders
+let VIEW = { tab:'home', subject:null, chapter:null };
+
+// Editing state — tracks which item (if any) is being edited in an open modal
+let EDITING = { type:null, id:null };
+
+/* ---------------------------------------------------------------------
+   2. PERSISTENCE
+   --------------------------------------------------------------------- */
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultData();
+    const parsed = JSON.parse(raw);
+    // Ensure shape integrity in case of partial/old data
+    const base = defaultData();
+    return Object.assign(base, parsed, {
+      errorLog: Object.assign(base.errorLog, parsed.errorLog || {}),
+      revision: Object.assign(base.revision, parsed.revision || {}),
+      streak: Object.assign(base.streak, parsed.streak || {})
+    });
+  }catch(e){
+    console.error('Failed to load data, starting fresh.', e);
+    return defaultData();
+  }
+}
+
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  }catch(e){
+    console.error('Failed to save data.', e);
+    showToast('Storage error — data may not have saved.');
+  }
+}
+
+/* ---------------------------------------------------------------------
+   3. UTILITIES
+   --------------------------------------------------------------------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function formatDate(dstr){
+  if(!dstr) return '';
+  const d = new Date(dstr + 'T00:00:00');
+  if(isNaN(d)) return dstr;
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function daysBetween(d1, d2){
+  const a = new Date(d1 + 'T00:00:00');
+  const b = new Date(d2 + 'T00:00:00');
+  return Math.round((b - a) / 86400000);
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Ripple effect for any element with class .rippleable
+document.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest('.rippleable');
+  if(!el) return;
+  const rect = el.getBoundingClientRect();
+  const ripple = document.createElement('span');
+  const size = Math.max(rect.width, rect.height);
+  ripple.className = 'ripple';
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+  ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+  el.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+});
+
+/* ---------------------------------------------------------------------
+   4. STREAK LOGIC
+   --------------------------------------------------------------------- */
+function recordActivity(){
+  const today = todayStr();
+  const s = DATA.streak;
+  if(s.lastDate === today) return; // already counted today
+  if(s.lastDate && daysBetween(s.lastDate, today) === 1){
+    s.count += 1;
+  }else{
+    s.count = 1;
+  }
+  s.lastDate = today;
+  saveData();
+}
+
+function currentStreakDisplay(){
+  const s = DATA.streak;
+  if(!s.lastDate) return 0;
+  const gap = daysBetween(s.lastDate, todayStr());
+  if(gap <= 1) return s.count; // still alive (today or grace of yesterday's log)
+  return 0; // streak broken
+}
+
+/* ---------------------------------------------------------------------
+   5. DATA HELPERS — chapters, stats, aggregates
+   --------------------------------------------------------------------- */
+function getChapters(section, subject){
+  // section: 'errorLog' | 'revision'
+  return Object.keys(DATA[section][subject] || {}).sort();
+}
+
+function ensureChapter(section, subject, chapter){
+  if(!DATA[section][subject][chapter]) DATA[section][subject][chapter] = [];
+  return DATA[section][subject][chapter];
+}
+
+function chapterStats(subject, chapter){
+  const qs = DATA.errorLog[subject]?.[chapter] || [];
+  const a = qs.filter(q => q.category === 'A').length;
+  const b = qs.filter(q => q.category === 'B').length;
+  const c = qs.filter(q => q.category === 'C').length;
+  const total = qs.length;
+  const mastery = total ? Math.round(((c*1 + b*0.5) / total) * 100) : 0;
+  return { a, b, c, total, mastery };
+}
+
+function subjectErrorTotals(subject){
+  let a=0,b=0,c=0;
+  getChapters('errorLog', subject).forEach(ch => {
+    const s = chapterStats(subject, ch);
+    a += s.a; b += s.b; c += s.c;
+  });
+  const total = a+b+c;
+  const mastery = total ? Math.round(((c*1 + b*0.5)/total)*100) : 0;
+  return { a,b,c,total,mastery, chapters:getChapters('errorLog',subject).length };
+}
+
+function overallErrorTotals(){
+  let a=0,b=0,c=0,chapters=0;
+  SUBJECTS.forEach(s => {
+    const t = subjectErrorTotals(s);
+    a+=t.a; b+=t.b; c+=t.c; chapters+=t.chapters;
+  });
+  const total = a+b+c;
+  const mastery = total ? Math.round(((c*1 + b*0.5)/total)*100) : 0;
+  return { a,b,c,total,mastery,chapters };
+}
+
+function totalRevisionCount(){
+  let n = 0;
+  SUBJECTS.forEach(s => getChapters('revision', s).forEach(ch => {
+    n += (DATA.revision[s][ch] || []).length;
+  }));
+  return n;
+}
+
+function allChapterStatsFlat(){
+  const list = [];
+  SUBJECTS.forEach(subject => {
+    getChapters('errorLog', subject).forEach(chapter => {
+      list.push({ subject, chapter, ...chapterStats(subject, chapter) });
+    });
+  });
+  return list;
+}
+
+function mostRevisedChapter(){
+  let best = null;
+  SUBJECTS.forEach(subject => {
+    getChapters('revision', subject).forEach(chapter => {
+      const n = (DATA.revision[subject][chapter] || []).length;
+      if(!best || n > best.n) best = { subject, chapter, n };
+    });
+  });
+  return best;
+}
+
+/* ---------------------------------------------------------------------
+   6. RENDER — ROUTER
+   --------------------------------------------------------------------- */
+function render(){
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === VIEW.tab));
+  const fab = document.getElementById('fab');
+  fab.classList.toggle('hidden', VIEW.tab === 'home' || VIEW.tab === 'analytics');
+
+  const main = document.getElementById('main');
+  let html = '';
+  switch(VIEW.tab){
+    case 'home': html = renderHome(); break;
+    case 'errors': html = renderSection('errorLog'); break;
+    case 'revision': html = renderSection('revision'); break;
+    case 'tests': html = renderTests(); break;
+    case 'analytics': html = renderAnalytics(); break;
+  }
+  main.innerHTML = `<div class="view">${html}</div>`;
+  attachViewListeners();
+
+  // Draw canvases after DOM insert
+  if(VIEW.tab === 'analytics') drawAnalyticsCharts();
+  if(VIEW.tab === 'tests') drawTestTrend();
+}
+
+/* ---------------------------------------------------------------------
+   7. RENDER — HOME
+   --------------------------------------------------------------------- */
+function renderHome(){
+  const dayIndex = Math.floor(Date.now() / 86400000) % QUOTES.length;
+  const quote = QUOTES[dayIndex];
+  const err = overallErrorTotals();
+  const revCount = totalRevisionCount();
+  const streak = currentStreakDisplay();
+
+  return `
+    <div class="quote-card">
+      <div class="mark">&ldquo;</div>
+      <p>${escapeHtml(quote.q)}</p>
+      <div class="who">— ${escapeHtml(quote.a)}</div>
+    </div>
+
+    <div class="streak-row">
+      <div class="card streak-card">
+        <div class="streak-flame">🔥</div>
+        <div>
+          <div class="streak-num">${streak} day${streak===1?'':'s'}</div>
+          <div class="streak-label">Current streak</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mastery-block">
+      <div class="ring-wrap">
+        <canvas id="masteryRing" width="176" height="176" style="width:88px;height:88px;"></canvas>
+        <div class="ring-num">${err.mastery}%</div>
+      </div>
+      <div class="desc">
+        <h3>Overall mastery</h3>
+        <p>Based on ${err.total} logged question${err.total===1?'':'s'} across ${err.chapters} chapter${err.chapters===1?'':'s'}.</p>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Snapshot</h2></div>
+    <div class="stat-grid">
+      <div class="card stat-card">
+        <div class="top"><span class="icon">📖</span></div>
+        <div class="value">${err.total}</div>
+        <div class="label">Error questions</div>
+      </div>
+      <div class="card stat-card">
+        <div class="top"><span class="icon">🔁</span></div>
+        <div class="value">${revCount}</div>
+        <div class="label">Revision questions</div>
+      </div>
+      <div class="card stat-card">
+        <div class="top"><span class="icon">📝</span></div>
+        <div class="value">${DATA.tests.length}</div>
+        <div class="label">Tests logged</div>
+      </div>
+      <div class="card stat-card">
+        <div class="top"><span class="icon">✅</span></div>
+        <div class="value">${err.mastery}%</div>
+        <div class="label">Mastery</div>
+      </div>
+      <div class="card stat-card">
+        <div class="top"><span class="icon">❌</span></div>
+        <div class="value">${err.a}</div>
+        <div class="label">A — couldn't solve</div>
+      </div>
+      <div class="card stat-card">
+        <div class="top"><span class="icon">⚠️</span></div>
+        <div class="value">${err.b}</div>
+        <div class="label">B — hard</div>
+      </div>
+      <div class="card stat-card wide">
+        <div class="top"><span class="icon">✅</span></div>
+        <div class="value">${err.c}</div>
+        <div class="label">C — easy (mastered)</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   8. RENDER — ERROR LOG & REVISION (shared structure)
+   --------------------------------------------------------------------- */
+function renderSection(section){
+  const isError = section === 'errorLog';
+
+  // LEVEL 3: question list inside a chapter
+  if(VIEW.subject && VIEW.chapter){
+    const items = DATA[section][VIEW.subject]?.[VIEW.chapter] || [];
+    const sorted = [...items].sort((x,y) => (y.date||'').localeCompare(x.date||''));
+    return `
+      <div class="back-bar">
+        <button class="rippleable" data-back-to="subject">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          ${VIEW.subject}
+        </button>
+        <span class="crumb">/ ${escapeHtml(VIEW.chapter)}</span>
+      </div>
+      <div class="section-title"><h2>${escapeHtml(VIEW.chapter)}</h2><span class="hint">${items.length} item${items.length===1?'':'s'}</span></div>
+      ${sorted.length ? sorted.map(item => isError ? errorQuestionCard(item) : revisionQuestionCard(item)).join('') : emptyState('🗒️', isError ? 'No questions logged here yet. Tap + to add your first one.' : 'No revision questions saved yet. Tap + to add one.')}
+    `;
+  }
+
+  // LEVEL 2: chapter list inside a subject
+  if(VIEW.subject){
+    const chapters = getChapters(section, VIEW.subject);
+    return `
+      <div class="back-bar">
+        <button class="rippleable" data-back-to="root">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          All subjects
+        </button>
+      </div>
+      <div class="section-title"><h2>${VIEW.subject}</h2><span class="hint">${chapters.length} chapter${chapters.length===1?'':'s'}</span></div>
+      ${chapters.length ? chapters.map(ch => chapterCard(section, VIEW.subject, ch)).join('') : emptyState('📚', 'No chapters yet. Tap + to log your first question in this subject.')}
+    `;
+  }
+
+  // LEVEL 1: subject list
+  return `
+    <div class="section-title"><h2>${isError ? 'Error Log' : 'Revision Bank'}</h2><span class="hint">by subject</span></div>
+    <div class="subject-grid">
+      ${SUBJECTS.map(s => subjectCard(section, s)).join('')}
+    </div>
+  `;
+}
+
+function subjectCard(section, subject){
+  const chapters = getChapters(section, subject);
+  const isError = section === 'errorLog';
+  let metaText;
+  if(isError){
+    const t = subjectErrorTotals(subject);
+    metaText = `${chapters.length} chapters · ${t.total} questions · ${t.mastery}% mastery`;
+  }else{
+    let n = 0; chapters.forEach(ch => n += (DATA.revision[subject][ch]||[]).length);
+    metaText = `${chapters.length} chapters · ${n} saved`;
+  }
+  return `
+    <div class="card subject-card rippleable" data-goto-subject="${section}|${subject}">
+      <div class="meta">
+        <h3>${subject}</h3>
+        <p>${metaText}</p>
+      </div>
+      <div class="chev">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+  `;
+}
+
+function chapterCard(section, subject, chapter){
+  if(section === 'errorLog'){
+    const s = chapterStats(subject, chapter);
+    return `
+      <div class="card chapter-card rippleable" data-goto-chapter="${section}|${subject}|${escapeHtml(chapter)}">
+        <div class="head">
+          <h3>${escapeHtml(chapter)}</h3>
+          <span class="mastery-tag">${s.mastery}%</span>
+        </div>
+        <div class="badge-row">
+          <span class="badge a">A ${s.a}</span>
+          <span class="badge b">B ${s.b}</span>
+          <span class="badge c">C ${s.c}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${s.mastery}%;"></div></div>
+      </div>
+    `;
+  }else{
+    const n = (DATA.revision[subject][chapter] || []).length;
+    return `
+      <div class="card chapter-card rippleable" data-goto-chapter="${section}|${subject}|${escapeHtml(chapter)}">
+        <div class="head">
+          <h3>${escapeHtml(chapter)}</h3>
+          <span class="mastery-tag">${n} saved</span>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function errorQuestionCard(item){
+  const catLabel = { A:"Couldn't solve", B:'Hard', C:'Easy' }[item.category] || '';
+  return `
+    <div class="card q-card">
+      <div class="cat-strip ${item.category.toLowerCase()}"></div>
+      <div class="row1">
+        <span class="source">${escapeHtml(item.source)}</span>
+        <span class="badge ${item.category.toLowerCase()}">${item.category} · ${catLabel}</span>
+      </div>
+      ${item.notes ? `<div class="notes">${escapeHtml(item.notes)}</div>` : ''}
+      <div class="foot">
+        <span class="date">${formatDate(item.date)}</span>
+        <span class="foot-actions">
+          <button class="edit rippleable" data-edit-q="${item.id}">Edit</button>
+          <button class="del rippleable" data-delete-q="${item.id}">Delete</button>
+        </span>
+      </div>
+    </div>
+  `;
+}
+
+function revisionQuestionCard(item){
+  return `
+    <div class="card q-card">
+      <div class="rev-question">${escapeHtml(item.question)}</div>
+      ${item.source ? `<div class="notes"><strong>Source:</strong> ${escapeHtml(item.source)}</div>` : ''}
+      ${item.notes ? `<div class="notes">${escapeHtml(item.notes)}</div>` : ''}
+      <div class="foot">
+        <span class="date">${formatDate(item.date)}</span>
+        <span class="foot-actions">
+          <button class="edit rippleable" data-edit-rev="${item.id}">Edit</button>
+          <button class="del rippleable" data-delete-rev="${item.id}">Delete</button>
+        </span>
+      </div>
+    </div>
+  `;
+}
+
+function emptyState(glyph, text){
+  return `<div class="empty-state"><div class="glyph">${glyph}</div><p>${text}</p></div>`;
+}
+
+/* ---------------------------------------------------------------------
+   9. RENDER — TESTS
+   --------------------------------------------------------------------- */
+function renderTests(){
+  const tests = [...DATA.tests].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  if(!tests.length){
+    return `
+      <div class="section-title"><h2>Test Analysis</h2></div>
+      ${emptyState('📝', 'No tests logged yet. Tap + to record your first mock or sectional test.')}
+    `;
+  }
+
+  const pcts = DATA.tests.map(t => (t.score / t.total) * 100).filter(n => !isNaN(n));
+  const highest = Math.round(Math.max(...pcts));
+  const avg = Math.round(pcts.reduce((a,b)=>a+b,0) / pcts.length);
+
+  const subjAvg = { Physics:0, Chemistry:0, Maths:0 };
+  const counts = { Physics:0, Chemistry:0, Maths:0 };
+  DATA.tests.forEach(t => {
+    if(t.physics !== undefined && t.physics !== null && t.physics !== ''){ subjAvg.Physics += Number(t.physics); counts.Physics++; }
+    if(t.chemistry !== undefined && t.chemistry !== null && t.chemistry !== ''){ subjAvg.Chemistry += Number(t.chemistry); counts.Chemistry++; }
+    if(t.maths !== undefined && t.maths !== null && t.maths !== ''){ subjAvg.Maths += Number(t.maths); counts.Maths++; }
+  });
+  SUBJECTS.forEach(s => subjAvg[s] = counts[s] ? subjAvg[s]/counts[s] : 0);
+  const best = SUBJECTS.reduce((a,b) => subjAvg[a] >= subjAvg[b] ? a : b);
+  const weak = SUBJECTS.reduce((a,b) => subjAvg[a] <= subjAvg[b] ? a : b);
+
+  return `
+    <div class="section-title"><h2>Test Analysis</h2><span class="hint">${tests.length} test${tests.length===1?'':'s'}</span></div>
+
+    <div class="summary-grid">
+      <div class="card stat-card"><div class="value">${highest}%</div><div class="label">Highest score</div></div>
+      <div class="card stat-card"><div class="value">${avg}%</div><div class="label">Average score</div></div>
+      <div class="card stat-card"><div class="value">${best}</div><div class="label">Best subject</div></div>
+      <div class="card stat-card"><div class="value">${weak}</div><div class="label">Needs work</div></div>
+    </div>
+
+    <div class="card chart-card">
+      <h3>Score trend</h3>
+      <canvas id="trendCanvas" height="160"></canvas>
+    </div>
+
+    <div class="section-title"><h2>All tests</h2></div>
+    ${tests.map(testCard).join('')}
+  `;
+}
+
+function testCard(t){
+  const pct = Math.round((t.score / t.total) * 100);
+  return `
+    <div class="card test-card">
+      <div class="head">
+        <div>
+          <h3>${escapeHtml(t.name)}</h3>
+          <div class="date">${formatDate(t.date)}</div>
+        </div>
+        <div class="pct">${isNaN(pct)?'—':pct+'%'}</div>
+      </div>
+      <div class="test-marks">
+        <div class="m"><div class="n">${t.score}/${t.total}</div><div class="l">Total</div></div>
+        <div class="m"><div class="n">${t.physics ?? '—'}</div><div class="l">Physics</div></div>
+        <div class="m"><div class="n">${t.chemistry ?? '—'}</div><div class="l">Chemistry</div></div>
+        <div class="m"><div class="n">${t.maths ?? '—'}</div><div class="l">Maths</div></div>
+      </div>
+      ${t.mistakes ? `<div class="note-block"><b>Mistakes:</b> ${escapeHtml(t.mistakes)}</div>` : ''}
+      ${t.improve ? `<div class="note-block"><b>To improve:</b> ${escapeHtml(t.improve)}</div>` : ''}
+      <div class="actions-row">
+        <button class="edit rippleable" data-edit-test="${t.id}">Edit</button>
+        <button class="del rippleable" data-delete-test="${t.id}">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   10. RENDER — ANALYTICS
+   --------------------------------------------------------------------- */
+function renderAnalytics(){
+  const overall = overallErrorTotals();
+  const flat = allChapterStatsFlat();
+  const weak = [...flat].filter(c => c.total > 0).sort((a,b) => a.mastery - b.mastery).slice(0,3);
+  const strong = [...flat].filter(c => c.total > 0).sort((a,b) => b.mastery - a.mastery).slice(0,3);
+  const mostMistakes = [...flat].sort((a,b) => b.a - a.a)[0];
+  const mostRevised = mostRevisedChapter();
+
+  const subjectRows = SUBJECTS.map(s => {
+    const t = subjectErrorTotals(s);
+    return `
+      <div class="mini-row card">
+        <div>
+          <div class="name">${s}</div>
+          <div class="sub">${t.total} question${t.total===1?'':'s'}</div>
+        </div>
+        <div class="val">${t.mastery}%</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="section-title"><h2>Analytics</h2></div>
+
+    <div class="card mastery-block">
+      <div class="ring-wrap">
+        <canvas id="masteryRing2" width="176" height="176" style="width:88px;height:88px;"></canvas>
+        <div class="ring-num">${overall.mastery}%</div>
+      </div>
+      <div class="desc">
+        <h3>Overall mastery</h3>
+        <p>${overall.total} total questions · ${overall.chapters} chapters tracked</p>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>By subject</h2></div>
+    <div class="mini-list">${subjectRows}</div>
+
+    <div class="card chart-card" style="margin-top:16px;">
+      <h3>A / B / C distribution</h3>
+      <canvas id="pieCanvas" width="220" height="220" style="max-width:220px;margin:0 auto;"></canvas>
+      <div class="legend">
+        <div class="item"><span class="dot" style="background:var(--cat-a);"></span>A — Couldn't solve (${overall.a})</div>
+        <div class="item"><span class="dot" style="background:var(--cat-b);"></span>B — Hard (${overall.b})</div>
+        <div class="item"><span class="dot" style="background:var(--cat-c);"></span>C — Easy (${overall.c})</div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Weak chapters</h2><span class="hint">lowest mastery</span></div>
+    <div class="mini-list">
+      ${weak.length ? weak.map(c => `
+        <div class="mini-row card">
+          <div><div class="name">${escapeHtml(c.chapter)}</div><div class="sub">${c.subject}</div></div>
+          <div class="val">${c.mastery}%</div>
+        </div>
+      `).join('') : emptyState('🌱', 'Log a few questions to see weak chapters here.')}
+    </div>
+
+    <div class="section-title"><h2>Strong chapters</h2><span class="hint">highest mastery</span></div>
+    <div class="mini-list">
+      ${strong.length ? strong.map(c => `
+        <div class="mini-row card">
+          <div><div class="name">${escapeHtml(c.chapter)}</div><div class="sub">${c.subject}</div></div>
+          <div class="val">${c.mastery}%</div>
+        </div>
+      `).join('') : emptyState('🌟', 'Your strongest chapters will appear here.')}
+    </div>
+
+    <div class="section-title"><h2>Highlights</h2></div>
+    <div class="mini-list">
+      <div class="mini-row card">
+        <div><div class="name">Most mistakes</div><div class="sub">chapter with the most "A" questions</div></div>
+        <div class="val">${mostMistakes && mostMistakes.a > 0 ? escapeHtml(mostMistakes.chapter) : '—'}</div>
+      </div>
+      <div class="mini-row card">
+        <div><div class="name">Most revised chapter</div><div class="sub">by saved revision questions</div></div>
+        <div class="val">${mostRevised ? escapeHtml(mostRevised.chapter) : '—'}</div>
+      </div>
+      <div class="mini-row card">
+        <div><div class="name">Total questions logged</div><div class="sub">across error log + revision</div></div>
+        <div class="val">${overall.total + totalRevisionCount()}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   11. CANVAS CHARTS (hand-rolled, no external libs)
+   --------------------------------------------------------------------- */
+function ringColor(){ return getComputedStyle(document.body).getPropertyValue('--gold').trim() || '#B98A3E'; }
+function trackColor(){ return getComputedStyle(document.body).getPropertyValue('--paper-2').trim() || '#EFEAE0'; }
+
+function drawRing(canvasId, pct){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2, r = w/2 - 12;
+  ctx.clearRect(0,0,w,h);
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  // track
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = trackColor();
+  ctx.stroke();
+  // progress
+  const frac = Math.max(0, Math.min(100, pct)) / 100;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + frac*Math.PI*2);
+  ctx.strokeStyle = ringColor();
+  ctx.stroke();
+}
+
+function drawAnalyticsCharts(){
+  const overall = overallErrorTotals();
+  drawRing('masteryRing2', overall.mastery);
+
+  const canvas = document.getElementById('pieCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const cx = w/2, cy = h/2, r = Math.min(w,h)/2 - 8;
+  ctx.clearRect(0,0,w,h);
+
+  const data = [
+    { v: overall.a, color: getComputedStyle(document.body).getPropertyValue('--cat-a').trim() },
+    { v: overall.b, color: getComputedStyle(document.body).getPropertyValue('--cat-b').trim() },
+    { v: overall.c, color: getComputedStyle(document.body).getPropertyValue('--cat-c').trim() }
+  ];
+  const total = data.reduce((s,d) => s + d.v, 0);
+
+  if(total === 0){
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = trackColor();
+    ctx.fill();
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--ink-soft').trim();
+    ctx.font = '13px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data yet', cx, cy);
+    return;
+  }
+
+  let start = -Math.PI/2;
+  data.forEach(d => {
+    if(d.v === 0) return;
+    const slice = (d.v/total) * Math.PI*2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, start+slice);
+    ctx.closePath();
+    ctx.fillStyle = d.color;
+    ctx.fill();
+    start += slice;
+  });
+  // inner cutout for a donut look
+  ctx.beginPath();
+  ctx.arc(cx, cy, r*0.55, 0, Math.PI*2);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--card').trim();
+  ctx.fill();
+}
+
+function drawTestTrend(){
+  const canvas = document.getElementById('trendCanvas');
+  if(!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 300;
+  const cssH = 160;
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const tests = [...DATA.tests].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const pts = tests.map(t => Math.round((t.score/t.total)*100)).filter(n => !isNaN(n));
+  if(pts.length === 0) return;
+
+  const padding = 18;
+  const maxV = 100, minV = 0;
+  const stepX = pts.length > 1 ? (cssW - padding*2) / (pts.length - 1) : 0;
+
+  // gridlines
+  ctx.strokeStyle = trackColor();
+  ctx.lineWidth = 1;
+  for(let i=0;i<=2;i++){
+    const y = padding + (cssH - padding*2) * (i/2);
+    ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(cssW-padding, y); ctx.stroke();
+  }
+
+  // line
+  ctx.beginPath();
+  pts.forEach((v,i) => {
+    const x = padding + stepX*i;
+    const y = padding + (cssH - padding*2) * (1 - (v-minV)/(maxV-minV));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle = ringColor();
+  ctx.lineWidth = 2.4;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // points
+  pts.forEach((v,i) => {
+    const x = padding + stepX*i;
+    const y = padding + (cssH - padding*2) * (1 - (v-minV)/(maxV-minV));
+    ctx.beginPath();
+    ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle = ringColor();
+    ctx.fill();
+  });
+}
+
+/* ---------------------------------------------------------------------
+   12. EVENT WIRING — main view (delegated, re-attached on every render)
+   --------------------------------------------------------------------- */
+function attachViewListeners(){
+  document.querySelectorAll('[data-goto-subject]').forEach(el => {
+    el.addEventListener('click', () => {
+      const [section, subject] = el.dataset.gotoSubject.split('|');
+      VIEW.subject = subject; VIEW.chapter = null;
+      render();
+    });
+  });
+  document.querySelectorAll('[data-goto-chapter]').forEach(el => {
+    el.addEventListener('click', () => {
+      const [section, subject, chapter] = el.dataset.gotoChapter.split('|');
+      VIEW.subject = subject; VIEW.chapter = chapter;
+      render();
+    });
+  });
+  document.querySelectorAll('[data-back-to]').forEach(el => {
+    el.addEventListener('click', () => {
+      if(el.dataset.backTo === 'subject'){ VIEW.chapter = null; }
+      else{ VIEW.subject = null; VIEW.chapter = null; }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-delete-q]').forEach(el => {
+    el.addEventListener('click', () => deleteErrorQuestion(el.dataset.deleteQ));
+  });
+  document.querySelectorAll('[data-delete-rev]').forEach(el => {
+    el.addEventListener('click', () => deleteRevisionQuestion(el.dataset.deleteRev));
+  });
+  document.querySelectorAll('[data-delete-test]').forEach(el => {
+    el.addEventListener('click', () => deleteTest(el.dataset.deleteTest));
+  });
+  document.querySelectorAll('[data-edit-q]').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = (DATA.errorLog[VIEW.subject]?.[VIEW.chapter] || []).find(q => q.id === el.dataset.editQ);
+      if(item) openQuestionModal(item);
+    });
+  });
+  document.querySelectorAll('[data-edit-rev]').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = (DATA.revision[VIEW.subject]?.[VIEW.chapter] || []).find(q => q.id === el.dataset.editRev);
+      if(item) openRevisionModal(item);
+    });
+  });
+  document.querySelectorAll('[data-edit-test]').forEach(el => {
+    el.addEventListener('click', () => {
+      const item = DATA.tests.find(t => t.id === el.dataset.editTest);
+      if(item) openTestModal(item);
+    });
+  });
+}
+
+function deleteErrorQuestion(id){
+  const list = DATA.errorLog[VIEW.subject][VIEW.chapter];
+  const idx = list.findIndex(q => q.id === id);
+  if(idx > -1){
+    list.splice(idx,1);
+    if(list.length === 0) delete DATA.errorLog[VIEW.subject][VIEW.chapter];
+    saveData();
+    if(!DATA.errorLog[VIEW.subject][VIEW.chapter]) VIEW.chapter = null;
+    render();
+    showToast('Question deleted');
+  }
+}
+
+function deleteRevisionQuestion(id){
+  const list = DATA.revision[VIEW.subject][VIEW.chapter];
+  const idx = list.findIndex(q => q.id === id);
+  if(idx > -1){
+    list.splice(idx,1);
+    if(list.length === 0) delete DATA.revision[VIEW.subject][VIEW.chapter];
+    saveData();
+    if(!DATA.revision[VIEW.subject][VIEW.chapter]) VIEW.chapter = null;
+    render();
+    showToast('Revision question deleted');
+  }
+}
+
+function deleteTest(id){
+  const idx = DATA.tests.findIndex(t => t.id === id);
+  if(idx > -1){
+    DATA.tests.splice(idx,1);
+    saveData();
+    render();
+    showToast('Test deleted');
+  }
+}
+
+/* ---------------------------------------------------------------------
+   13. BOTTOM NAV + FAB
+   --------------------------------------------------------------------- */
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    VIEW = { tab: btn.dataset.tab, subject:null, chapter:null };
+    render();
+  });
+});
+
+document.getElementById('fab').addEventListener('click', () => {
+  if(VIEW.tab === 'errors') openQuestionModal();
+  else if(VIEW.tab === 'revision') openRevisionModal();
+  else if(VIEW.tab === 'tests') openTestModal();
+});
+
+/* ---------------------------------------------------------------------
+   14. MODAL: ADD ERROR-LOG QUESTION
+   --------------------------------------------------------------------- */
+function populateSubjectSelect(selectEl){
+  selectEl.innerHTML = SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function refreshChapterDatalist(datalistId, subject, section){
+  const dl = document.getElementById(datalistId);
+  const chapters = subject ? getChapters(section, subject) : [];
+  dl.innerHTML = chapters.map(c => `<option value="${escapeHtml(c)}">`).join('');
+}
+
+function openQuestionModal(editItem){
+  const modal = document.getElementById('questionModal');
+  const heading = modal.querySelector('h2');
+  const submitBtn = document.getElementById('questionForm').querySelector('.btn-primary');
+  populateSubjectSelect(document.getElementById('qSubject'));
+
+  if(editItem){
+    EDITING = { type:'question', id:editItem.id };
+    heading.textContent = 'Edit question';
+    submitBtn.textContent = 'Save changes';
+    document.getElementById('qSubject').value = VIEW.subject;
+    document.getElementById('qChapter').value = VIEW.chapter;
+    document.getElementById('qSource').value = editItem.source;
+    document.getElementById('qNotes').value = editItem.notes || '';
+    document.querySelectorAll('#qCatPicker .cat-option').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#qCatPicker .cat-option[data-cat="${editItem.category}"]`).classList.add('active');
+  }else{
+    EDITING = { type:null, id:null };
+    heading.textContent = 'Log a question';
+    submitBtn.textContent = 'Save question';
+    if(VIEW.subject) document.getElementById('qSubject').value = VIEW.subject;
+    if(VIEW.chapter) document.getElementById('qChapter').value = VIEW.chapter;
+    else document.getElementById('qChapter').value = '';
+    document.getElementById('qSource').value = '';
+    document.getElementById('qNotes').value = '';
+    document.querySelectorAll('#qCatPicker .cat-option').forEach(b => b.classList.remove('active'));
+    document.querySelector('#qCatPicker .cat-option[data-cat="A"]').classList.add('active');
+  }
+
+  refreshChapterDatalist('chapterList', document.getElementById('qSubject').value, 'errorLog');
+  modal.classList.add('open');
+}
+function closeQuestionModal(){ document.getElementById('questionModal').classList.remove('open'); EDITING = {type:null, id:null}; }
+
+document.getElementById('qSubject').addEventListener('change', (e) => {
+  refreshChapterDatalist('chapterList', e.target.value, 'errorLog');
+});
+document.querySelectorAll('#qCatPicker .cat-option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#qCatPicker .cat-option').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+document.getElementById('qCancel').addEventListener('click', closeQuestionModal);
+
+document.getElementById('questionForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const subject = document.getElementById('qSubject').value;
+  const chapter = document.getElementById('qChapter').value.trim();
+  const source = document.getElementById('qSource').value.trim();
+  const notes = document.getElementById('qNotes').value.trim();
+  const activeCat = document.querySelector('#qCatPicker .cat-option.active');
+  const category = activeCat ? activeCat.dataset.cat : 'A';
+  if(!chapter || !source) return;
+
+  if(EDITING.type === 'question'){
+    // Remove the old item from its original location (subject/chapter may have changed)
+    const oldList = DATA.errorLog[VIEW.subject]?.[VIEW.chapter];
+    const idx = oldList ? oldList.findIndex(q => q.id === EDITING.id) : -1;
+    let original = null;
+    if(idx > -1){ original = oldList[idx]; oldList.splice(idx,1); if(oldList.length === 0) delete DATA.errorLog[VIEW.subject][VIEW.chapter]; }
+    ensureChapter('errorLog', subject, chapter).push({
+      id: EDITING.id, source, notes, category, date: original ? original.date : todayStr()
+    });
+    saveData();
+    closeQuestionModal();
+    VIEW = { tab:'errors', subject, chapter };
+    render();
+    showToast('Question updated');
+  }else{
+    ensureChapter('errorLog', subject, chapter).push({
+      id: uid(), source, notes, category, date: todayStr()
+    });
+    saveData();
+    recordActivity();
+    closeQuestionModal();
+    VIEW = { tab:'errors', subject, chapter };
+    render();
+    showToast('Question saved');
+  }
+});
+
+/* ---------------------------------------------------------------------
+   15. MODAL: ADD REVISION QUESTION
+   --------------------------------------------------------------------- */
+function openRevisionModal(editItem){
+  const modal = document.getElementById('revisionModal');
+  const heading = modal.querySelector('h2');
+  const submitBtn = document.getElementById('revisionForm').querySelector('.btn-primary');
+  populateSubjectSelect(document.getElementById('rSubject'));
+
+  if(editItem){
+    EDITING = { type:'revision', id:editItem.id };
+    heading.textContent = 'Edit revision question';
+    submitBtn.textContent = 'Save changes';
+    document.getElementById('rSubject').value = VIEW.subject;
+    document.getElementById('rChapter').value = VIEW.chapter;
+    document.getElementById('rQuestion').value = editItem.question;
+    document.getElementById('rSource').value = editItem.source || '';
+    document.getElementById('rNotes').value = editItem.notes || '';
+  }else{
+    EDITING = { type:null, id:null };
+    heading.textContent = 'Save for revision';
+    submitBtn.textContent = 'Save for revision';
+    if(VIEW.subject) document.getElementById('rSubject').value = VIEW.subject;
+    if(VIEW.chapter) document.getElementById('rChapter').value = VIEW.chapter;
+    else document.getElementById('rChapter').value = '';
+    document.getElementById('rQuestion').value = '';
+    document.getElementById('rSource').value = '';
+    document.getElementById('rNotes').value = '';
+  }
+
+  refreshChapterDatalist('chapterListRev', document.getElementById('rSubject').value, 'revision');
+  modal.classList.add('open');
+}
+function closeRevisionModal(){ document.getElementById('revisionModal').classList.remove('open'); EDITING = {type:null, id:null}; }
+
+document.getElementById('rSubject').addEventListener('change', (e) => {
+  refreshChapterDatalist('chapterListRev', e.target.value, 'revision');
+});
+document.getElementById('rCancel').addEventListener('click', closeRevisionModal);
+
+document.getElementById('revisionForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const subject = document.getElementById('rSubject').value;
+  const chapter = document.getElementById('rChapter').value.trim();
+  const question = document.getElementById('rQuestion').value.trim();
+  const source = document.getElementById('rSource').value.trim();
+  const notes = document.getElementById('rNotes').value.trim();
+  if(!chapter || !question) return;
+
+  if(EDITING.type === 'revision'){
+    const oldList = DATA.revision[VIEW.subject]?.[VIEW.chapter];
+    const idx = oldList ? oldList.findIndex(q => q.id === EDITING.id) : -1;
+    let original = null;
+    if(idx > -1){ original = oldList[idx]; oldList.splice(idx,1); if(oldList.length === 0) delete DATA.revision[VIEW.subject][VIEW.chapter]; }
+    ensureChapter('revision', subject, chapter).push({
+      id: EDITING.id, question, source, notes, date: original ? original.date : todayStr()
+    });
+    saveData();
+    closeRevisionModal();
+    VIEW = { tab:'revision', subject, chapter };
+    render();
+    showToast('Revision question updated');
+  }else{
+    ensureChapter('revision', subject, chapter).push({
+      id: uid(), question, source, notes, date: todayStr()
+    });
+    saveData();
+    recordActivity();
+    closeRevisionModal();
+    VIEW = { tab:'revision', subject, chapter };
+    render();
+    showToast('Saved for revision');
+  }
+});
+
+/* ---------------------------------------------------------------------
+   16. MODAL: ADD TEST
+   --------------------------------------------------------------------- */
+function openTestModal(editItem){
+  const modal = document.getElementById('testModal');
+  const heading = modal.querySelector('h2');
+  const submitBtn = document.getElementById('testForm').querySelector('.btn-primary');
+  document.getElementById('testForm').reset();
+
+  if(editItem){
+    EDITING = { type:'test', id:editItem.id };
+    heading.textContent = 'Edit test';
+    submitBtn.textContent = 'Save changes';
+    document.getElementById('tName').value = editItem.name;
+    document.getElementById('tDate').value = editItem.date;
+    document.getElementById('tTotal').value = editItem.total;
+    document.getElementById('tScore').value = editItem.score;
+    document.getElementById('tPhysics').value = editItem.physics ?? '';
+    document.getElementById('tChemistry').value = editItem.chemistry ?? '';
+    document.getElementById('tMaths').value = editItem.maths ?? '';
+    document.getElementById('tMistakes').value = editItem.mistakes || '';
+    document.getElementById('tImprove').value = editItem.improve || '';
+  }else{
+    EDITING = { type:null, id:null };
+    heading.textContent = 'Log a test';
+    submitBtn.textContent = 'Save test';
+    document.getElementById('tDate').value = todayStr();
+  }
+
+  modal.classList.add('open');
+}
+function closeTestModal(){ document.getElementById('testModal').classList.remove('open'); EDITING = {type:null, id:null}; }
+document.getElementById('tCancel').addEventListener('click', closeTestModal);
+
+document.getElementById('testForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('tName').value.trim();
+  const date = document.getElementById('tDate').value || todayStr();
+  const total = Number(document.getElementById('tTotal').value);
+  const score = Number(document.getElementById('tScore').value);
+  const physics = document.getElementById('tPhysics').value;
+  const chemistry = document.getElementById('tChemistry').value;
+  const maths = document.getElementById('tMaths').value;
+  const mistakes = document.getElementById('tMistakes').value.trim();
+  const improve = document.getElementById('tImprove').value.trim();
+  if(!name || !total) return;
+
+  if(EDITING.type === 'test'){
+    const idx = DATA.tests.findIndex(t => t.id === EDITING.id);
+    if(idx > -1){
+      DATA.tests[idx] = {
+        id: EDITING.id, name, date, score, total,
+        physics: physics === '' ? null : Number(physics),
+        chemistry: chemistry === '' ? null : Number(chemistry),
+        maths: maths === '' ? null : Number(maths),
+        mistakes, improve
+      };
+    }
+    saveData();
+    closeTestModal();
+    render();
+    showToast('Test updated');
+  }else{
+    DATA.tests.push({
+      id: uid(), name, date, score, total,
+      physics: physics === '' ? null : Number(physics),
+      chemistry: chemistry === '' ? null : Number(chemistry),
+      maths: maths === '' ? null : Number(maths),
+      mistakes, improve
+    });
+    saveData();
+    recordActivity();
+    closeTestModal();
+    render();
+    showToast('Test saved');
+  }
+});
+
+/* ---------------------------------------------------------------------
+   17. SEARCH
+   --------------------------------------------------------------------- */
+document.getElementById('btnSearch').addEventListener('click', () => {
+  document.getElementById('searchOverlay').classList.add('open');
+  document.getElementById('searchInput').value = '';
+  renderSearchResults('');
+  setTimeout(() => document.getElementById('searchInput').focus(), 250);
+});
+document.getElementById('btnCloseSearch').addEventListener('click', () => {
+  document.getElementById('searchOverlay').classList.remove('open');
+});
+document.getElementById('searchInput').addEventListener('input', (e) => renderSearchResults(e.target.value));
+
+function renderSearchResults(query){
+  const q = query.trim().toLowerCase();
+  const results = [];
+
+  SUBJECTS.forEach(subject => {
+    getChapters('errorLog', subject).forEach(chapter => {
+      if(!q || chapter.toLowerCase().includes(q) || subject.toLowerCase().includes(q)){
+        results.push({ label: chapter, tag: `${subject} · Error Log`, action: () => { VIEW = {tab:'errors', subject, chapter}; render(); } });
+      }
+    });
+    getChapters('revision', subject).forEach(chapter => {
+      if(!q || chapter.toLowerCase().includes(q) || subject.toLowerCase().includes(q)){
+        results.push({ label: chapter, tag: `${subject} · Revision`, action: () => { VIEW = {tab:'revision', subject, chapter}; render(); } });
+      }
+    });
+  });
+  DATA.tests.forEach(t => {
+    if(!q || t.name.toLowerCase().includes(q)){
+      results.push({ label: t.name, tag: `Test · ${formatDate(t.date)}`, action: () => { VIEW = {tab:'tests', subject:null, chapter:null}; render(); } });
+    }
+  });
+
+  const container = document.getElementById('searchResults');
+  if(!results.length){
+    container.innerHTML = emptyState('🔍', 'No matches. Try a different chapter, subject, or test name.');
+    return;
+  }
+  container.innerHTML = results.map((r,i) => `
+    <div class="card search-result-item rippleable" data-result-idx="${i}">
+      <span class="name">${escapeHtml(r.label)}</span>
+      <span class="tag">${escapeHtml(r.tag)}</span>
+    </div>
+  `).join('');
+  container.querySelectorAll('[data-result-idx]').forEach(el => {
+    el.addEventListener('click', () => {
+      results[Number(el.dataset.resultIdx)].action();
+      document.getElementById('searchOverlay').classList.remove('open');
+    });
+  });
+}
+
+/* ---------------------------------------------------------------------
+   18. SETTINGS — dark mode, backup, clear data
+   --------------------------------------------------------------------- */
+document.getElementById('btnSettings').addEventListener('click', () => {
+  document.getElementById('darkSwitch').classList.toggle('on', DATA.darkMode);
+  document.getElementById('settingsModal').classList.add('open');
+});
+document.getElementById('settingsClose').addEventListener('click', () => {
+  document.getElementById('settingsModal').classList.remove('open');
+});
+
+document.getElementById('darkSwitch').addEventListener('click', () => {
+  DATA.darkMode = !DATA.darkMode;
+  applyDarkMode();
+  saveData();
+  document.getElementById('darkSwitch').classList.toggle('on', DATA.darkMode);
+  if(VIEW.tab === 'analytics') drawAnalyticsCharts();
+  if(VIEW.tab === 'home') drawRing('masteryRing', overallErrorTotals().mastery);
+});
+
+function applyDarkMode(){
+  document.body.classList.toggle('dark', DATA.darkMode);
+}
+
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `jee-journal-backup-${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Backup exported');
+});
+
+document.getElementById('btnImport').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(!imported || typeof imported !== 'object') throw new Error('Invalid file');
+      DATA = Object.assign(defaultData(), imported, {
+        errorLog: Object.assign(defaultData().errorLog, imported.errorLog || {}),
+        revision: Object.assign(defaultData().revision, imported.revision || {}),
+        streak: Object.assign(defaultData().streak, imported.streak || {})
+      });
+      saveData();
+      applyDarkMode();
+      VIEW = { tab:'home', subject:null, chapter:null };
+      render();
+      document.getElementById('settingsModal').classList.remove('open');
+      showToast('Data imported successfully');
+    }catch(err){
+      console.error(err);
+      showToast('Import failed — invalid JSON file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnClearAll').addEventListener('click', () => {
+  if(confirm('This will permanently delete every question, revision item and test. Continue?')){
+    DATA = defaultData();
+    saveData();
+    VIEW = { tab:'home', subject:null, chapter:null };
+    applyDarkMode();
+    render();
+    document.getElementById('settingsModal').classList.remove('open');
+    showToast('All data cleared');
+  }
+});
+
+/* ---------------------------------------------------------------------
+   19. SERVICE WORKER REGISTRATION (installable / offline PWA)
+   --------------------------------------------------------------------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => {
+      console.warn('Service worker registration failed (this is expected if opened via file://):', err);
+    });
+  });
+}
+
+/* ---------------------------------------------------------------------
+   20. BOOT
+   --------------------------------------------------------------------- */
+applyDarkMode();
+render();
+// draw home ring after first paint
+requestAnimationFrame(() => {
+  if(VIEW.tab === 'home') drawRing('masteryRing', overallErrorTotals().mastery);
+});
+</script>
+</body>
+</html>
